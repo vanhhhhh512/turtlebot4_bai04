@@ -1,0 +1,16 @@
+Bài thực hành 04 — TurtleBot 4 Simulation
+
+The bai04_turtlebot4 package declares Apache-2.0 in package.xml.
+The root LICENSE applies to the assignment package's original code.
+
+The upstream/irobot_create_nodes and upstream/irobot_create_control directories
+contain source from iRobotEducation/create3_sim (Humble branch):
+https://github.com/iRobotEducation/create3_sim
+Pinned commit: 7d7a4f69a503d4eef22f13aeb8755c86955b8cc5
+Original package version: 2.1.0
+Their package.xml files declare BSD; original source copyright notices are retained.
+The root Apache license does not replace upstream license declarations.
+
+Local changes are described in upstream/BAI04_OVERRIDES.md:
+simulation motion_control full mode velocity ceiling and diff-drive velocity flags.
+
