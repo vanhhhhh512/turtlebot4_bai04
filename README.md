@@ -1,6 +1,6 @@
 # Bài thực hành 04 — TurtleBot 4 Simulation
 
-ROS 2 Humble + Ubuntu 22.04 + Gazebo Ignition Fortress. Mapping bằng teleop với SLAM Toolbox, lưu/nạp map cho AMCL và navigation bằng Nav2. Không dùng Docker.
+ROS 2 Humble + Ubuntu 22.04 + Gazebo Ignition Fortress. Mapping bằng teleop với SLAM Toolbox, lưu/nạp map cho AMCL và navigation bằng Nav2.
 
 ## Cấu trúc
 
@@ -24,19 +24,6 @@ ROS 2 Humble + Ubuntu 22.04 + Gazebo Ignition Fortress. Mapping bằng teleop v�
 ```
 
 Các launch gọi package TurtleBot 4/SLAM/Nav2 upstream. Entry đầy đủ mở simulator, RViz và teleop, lưu map rồi chuyển sang localization/Nav2. Hai package Create 3 trong `upstream/` chứa source sửa giới hạn vận tốc của mô phỏng; nguồn và commit nằm trong `BAI04_OVERRIDES.md`.
-
-## Hai file map nộp
-
-`map.yaml` và `map.pgm` ở gốc repo là đúng hai file người dùng xác nhận ngày 14/10/2026, sao chép nguyên byte từ `/home/admin1/map.yaml` và `/home/admin1/map.pgm`.
-
-| Thuộc tính | Giá trị |
-|---|---|
-| Kích thước | 401 × 401 ô |
-| Resolution | 0,05 m/ô |
-| Origin | `[-10, -10, 0]` |
-| YAML image | `map.pgm` — cùng thư mục |
-| SHA256 `map.yaml` | `64c481605424dcf67ae9bd42e8fdbdfcfa880c68d096c42af53be0d760f1b581` |
-| SHA256 `map.pgm` | `37dae8d694062218cbcf3588183729142d5008b9ac93827832af1a52dd5ba053` |
 
 ## 1. Cài đặt
 
@@ -110,35 +97,7 @@ Chọn **Nav2 Goal** trong RViz, click vùng trắng trống, kéo chọn hướ
 
 Không dùng teleop sau khi đặt goal; lượt va chạm, hủy hoặc cần điều khiển thủ công không tính. **Ctrl+C trong terminal launch chính** dừng toàn bộ bài.
 
-## 4. Navigation với map đã đóng gói
-
-Sau khi build, `bai04_workflow.launch.py phase:=navigation` mặc định nạp đúng map của repo đã cài tại `share/bai04_turtlebot4/maps/`.
-
-Terminal 1:
-
-```bash
-source /opt/ros/humble/setup.bash
-source ~/turtlebot4_ws/install/setup.bash
-export ROS_DOMAIN_ID=69 ROS_LOCALHOST_ONLY=1 IGN_PARTITION=bai04_saved_map
-ros2 launch bai04_turtlebot4 bai04_workflow.launch.py phase:=navigation
-```
-
-Workflow này khởi động simulator/AMCL/Nav2. Sau khi simulator sẵn sàng, mở terminal 2 để undock, khởi tạo pose và mở RViz:
-
-```bash
-source /opt/ros/humble/setup.bash
-source ~/turtlebot4_ws/install/setup.bash
-export ROS_DOMAIN_ID=69 ROS_LOCALHOST_ONLY=1 IGN_PARTITION=bai04_saved_map
-ros2 action send_goal /undock irobot_create_msgs/action/Undock '{}'
-ros2 run bai04_turtlebot4 initialize_pose_from_ground_truth
-ros2 run rviz2 rviz2 -d \
-  ~/turtlebot4_ws/install/bai04_turtlebot4/share/bai04_turtlebot4/rviz/nav2_default_view.rviz \
-  --ros-args -p use_sim_time:=true
-```
-
-Không chạy đồng thời hai phiên cùng ROS domain. Entry đầy đủ ở mục 3 tạo và sử dụng map mới của chính lượt mapping; mục 4 dùng map người dùng cung cấp trong repo.
-
-## 5. Node và topic chính
+## 4. Node và topic chính
 
 `Gazebo → bridge → /scan + /odom + TF → SLAM → map → MapServer/AMCL → Nav2 → /cmd_vel → robot`.
 
@@ -151,18 +110,3 @@ Không chạy đồng thời hai phiên cùng ROS domain. Entry đầy đủ ở
 | `/amcl_pose` | Pose/covariance AMCL |
 | `/tf`, `/tf_static` | Chuỗi `map → odom → base_link → sensor` |
 | `/navigate_to_pose` | Action nhận goal RViz |
-
-## 6. Phạm vi chỉnh sửa
-
-Overlay Create 3 bỏ trần vận tốc phần mềm trong mode `full`, tắt velocity limiter của diff-drive. Entry đầy đủ áp dụng `full` sau undock; teleop khởi đầu 0,5 m/s và 1,0 rad/s. Gia tốc và E-stop còn trong code; `full` cũng thay đổi reflex cliff/backup. Nav2 vẫn dùng cấu hình tốc độ navigation riêng. Chỉnh sửa áp dụng trong Gazebo; nguồn và commit được ghi trong `upstream/BAI04_OVERRIDES.md`.
-
-Helper initial pose dùng ground truth Gazebo, chỉ dành cho mô phỏng. Source hiện tại không triển khai autonomous exploration hoặc cảm nhận 3D. Vật cản thấp dưới mặt phẳng LiDAR có thể cần dữ liệu depth/PointCloud2 để bổ sung khả năng phát hiện.
-
-## 7. Nguồn và license
-
-- [TurtleBot 4 User Manual](https://turtlebot.github.io/turtlebot4-user-manual/)
-- [TurtleBot 4 Simulator](https://github.com/turtlebot/turtlebot4_simulator)
-- [SLAM Toolbox](https://github.com/SteveMacenski/slam_toolbox)
-- [Create 3 Simulation, branch humble](https://github.com/iRobotEducation/create3_sim/tree/humble), commit `7d7a4f69a503d4eef22f13aeb8755c86955b8cc5`.
-
-Package bài tập khai báo Apache-2.0. Các package upstream giữ license/copyright của nguồn gốc; xem `LICENSE`, `NOTICE` và `upstream/BAI04_OVERRIDES.md`.
